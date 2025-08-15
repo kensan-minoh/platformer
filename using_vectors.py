@@ -8,6 +8,7 @@ class Game():
         self.dirt_image = pygame.image.load('dirt.png')
         self.grass_image = pygame.image.load('grass.png')
         self.water_image = pygame.image.load('water.png')
+        self.player = None
 
         
     def update(self):
@@ -22,7 +23,8 @@ class Game():
                     Tile(self.grass_image, j*32, i*32, [main_tile_group, grass_tile_group])
                 elif tile_map[i][j] == 3:
                     Tile(self.water_image, j*32, i*32, [main_tile_group, water_tile_group])
-
+                elif tile_map[i][j] == 4:
+                    self.player = Player(j*32, i*32, player_group)
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, image, x, y, group):
@@ -37,11 +39,64 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, group):
         super().__init__(group)
         self.image = pygame.image.load('player.png')
-        self.rect = self.image.get_rect(midbottom=(x, y))
+        self.starting_x = x
+        self.starting_y = y - 32
+        self.rect = self.image.get_rect(topleft=(self.starting_x, self.starting_y))
 
+        # kinematic values
+        self.position = Vector2(x, y-32)
+        self.velocity = Vector2(0, 0)
+        self.acceleration = Vector2(0, 0.2)
+
+        # flags
+        self.is_jump =False
 
     def update(self):
-        pass
+        self.move()
+        self.check_touch_ground()
+
+    def check_touch_ground(self):
+        sprite = pygame.sprite.spritecollideany(self, grass_tile_group)
+        if sprite:
+            self.velocity.y = 0
+            self.acceleration.y = 0
+            self.rect.bottom = sprite.rect.top
+            self.is_jump = True
+        else:
+            self.acceleration.y = 0.5 
+            
+
+
+
+    def move(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RIGHT] and self.rect.right < WINDOW_WIDTH:
+            self.acceleration.x = 0.5
+            
+        elif keys[pygame.K_LEFT] and self.rect.left > 0:
+            self.acceleration.x = - 0.5
+        else:
+            self.velocity.x = 0
+            self.acceleration.x = 0
+
+        if keys[pygame.K_SPACE] and self.is_jump:
+            self.velocity.y = -15
+            self.acceleration.y = 0.5
+            self.is_jump = False
+        else:
+            pass
+
+
+
+        self.velocity += self.acceleration
+        self.position += self.velocity
+        self.rect.topleft = (int(self.position.x), int(self.position.y))  
+            
+    def reset_player(self):
+        self.rect.topleft = (self.starting_x, self.starting_y)
+
+
+
 
 
 
@@ -59,6 +114,8 @@ WINDOW_HEIGHT = 640
 
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Making a tile map")
+
+# load the background image
 background_image = pygame.image.load('background1.png')
 background_rect = background_image.get_rect(topleft=(0,0))
 
@@ -77,7 +134,7 @@ player_group = pygame.sprite.Group()
 
 # create the tile map: 0 -> no tile, 1 -> dirt, 2 - > grass, 3 - > water
 # 20 rows and 30 columns
-tile_map = [
+my_tile_map = [
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [ 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2],
@@ -89,7 +146,7 @@ tile_map = [
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [ 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [ 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2],
     [ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -101,13 +158,13 @@ tile_map = [
 ]
 
 my_game = Game()
-my_game.create_tile(tile_map)
-player = Player(WINDOW_WIDTH//2, WINDOW_HEIGHT-96, player_group)
+my_game.create_tile(my_tile_map)
+# player = Player(WINDOW_WIDTH//2, WINDOW_HEIGHT-96, player_group)
+my_player = player_group.sprites()[0]
 
 # main game loop
 running = True
 while running:
-    # check to see if the user wants to quit
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -117,10 +174,8 @@ while running:
 
     main_tile_group.update()
     main_tile_group.draw(display_surface)
-
+    player_group.update()
     player_group.draw(display_surface)
-    
-    
 
     pygame.display.update()
 
