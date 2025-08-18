@@ -46,64 +46,60 @@ class Player(pygame.sprite.Sprite):
         # kinematic values
         self.position = Vector2(x, y-32)
         self.velocity = Vector2(0, 0)
-        self.acceleration = Vector2(0, 0.2)
+        self.acceleration = Vector2(0, 0)
+
+        # kinematic constants
+        self.HORIZONTAL_ACCELERATION = 0.5
+        self.HORIZONTAL_FRICTION = 0.15
+
 
         # flags
-        self.is_jump =False
+        self.is_grounded =False
 
     def update(self):
         self.move()
         self.check_touch_ground()
 
-    def check_touch_ground(self):
-        sprite = pygame.sprite.spritecollideany(self, grass_tile_group)
-        if sprite:
-            self.velocity.y = 0
-            self.acceleration.y = 0
-            self.rect.bottom = sprite.rect.top
-            self.is_jump = True
-        else:
-            self.acceleration.y = 0.5 
-            
-
-
-
     def move(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RIGHT] and self.rect.right < WINDOW_WIDTH:
-            self.acceleration.x = 0.5
+            self.acceleration.x = self.HORIZONTAL_ACCELERATION
             
         elif keys[pygame.K_LEFT] and self.rect.left > 0:
-            self.acceleration.x = - 0.5
+            self.acceleration.x = - self.HORIZONTAL_ACCELERATION
         else:
-            self.velocity.x = 0
             self.acceleration.x = 0
 
-        if keys[pygame.K_SPACE] and self.is_jump:
-            self.velocity.y = -15
-            self.acceleration.y = 0.5
-            self.is_jump = False
-        else:
-            pass
+        # if keys[pygame.K_SPACE] and self.is_grounded:
+        #     self.velocity.y = -15
+        #     self.acceleration.y = 0.5
+        #     self.is_grounded = False
 
-
-
+        # calculate new kinematic values
         self.velocity += self.acceleration
+        self.velocity.x *= 0.95
         self.position += self.velocity
+        if self.position.x >= WINDOW_WIDTH-64:
+            self.position.x = WINDOW_WIDTH-64
+        elif self.position.x <= 0:
+            self.position.x = 0
         self.rect.topleft = (int(self.position.x), int(self.position.y))  
+
+    def check_touch_ground(self):
+        sprite = pygame.sprite.spritecollideany(self, grass_tile_group)
+        if sprite:
+            self.rect.bottom = sprite.rect.top
             
+
+            self.velocity.y = 0
+            self.acceleration.y = 0
+            self.is_grounded = True
+        else:
+            self.acceleration.y = 0.5 
+
+
     def reset_player(self):
         self.rect.topleft = (self.starting_x, self.starting_y)
-
-
-
-
-
-
-
-
-
-
 
 # initialize pygame
 pygame.init()
@@ -168,6 +164,12 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and my_player.is_grounded:
+                my_player.velocity.y = -15
+                my_player.is_grounded = False
+
 
     # fill the background
     display_surface.blit(background_image, background_rect)
