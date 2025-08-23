@@ -10,8 +10,6 @@ class Game():
         self.water_image = pygame.image.load('water.png')
         self.game_music = pygame.mixer.music.load('game_music.wav')
 
-
-
         self.player = None
         self.main_tile_group = main_tile_group
         self.dirt_tile_group = dirt_tile_group
@@ -23,7 +21,7 @@ class Game():
         # 20 rows and 30 columns
         self.tile_map = [
             [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [ 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2],
             [ 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
             [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -33,7 +31,7 @@ class Game():
             [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [ 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [ 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2],
             [ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
             [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -80,7 +78,14 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load('player.png')
         self.splash_sound = pygame.mixer.Sound("splash_sound.mp3")
         self.jump_sound = pygame.mixer.Sound("jump_sound.mp3")
-
+        self.jump_sound.set_volume(0.2)
+        # self.animation_run_right = []
+        # for i in range(8):
+        #     self.animation_run_right.append(pygame.image.load(f"boy/Run ({i+1}).png"))
+        self.animation_run_right = [pygame.transform.scale(pygame.image.load(f"boy/Run ({i+1}).png"),(64, 64)) for i in range(8)]
+        
+        print(self.animation_run_right)
+        self.animation_number = 0
 
         self.starting_x = x
         self.starting_y = y
@@ -110,6 +115,17 @@ class Player(pygame.sprite.Sprite):
         self.check_touch_dirt()
         self.check_touch_grass()
         self.check_touch_water()
+        self.animation()
+
+
+    def animation(self):
+        self.image = self.animation_run_right[self.animation_number]
+        self.animation_number += 1
+        if self.animation_number == len(self.animation_run_right):
+            self.animation_number = 0
+        
+
+
     
     def check_touch_dirt(self):
         collided_platform = pygame.sprite.spritecollideany(self, self.dirt_tile_group)
