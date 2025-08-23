@@ -9,6 +9,7 @@ class Game():
         self.grass_image = pygame.image.load('grass.png')
         self.water_image = pygame.image.load('water.png')
         self.player = None
+
         
     def update(self):
         pass
@@ -51,6 +52,7 @@ class Player(pygame.sprite.Sprite):
         self.HORIZONTAL_ACCELERATION = 0.5
         self.HORIZONTAL_FRICTION = 0.05
 
+
         # flags
         self.is_grounded =False
 
@@ -64,18 +66,25 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RIGHT] and self.rect.right < WINDOW_WIDTH:
             self.acceleration.x = self.HORIZONTAL_ACCELERATION
+            
         elif keys[pygame.K_LEFT] and self.rect.left > 0:
             self.acceleration.x = - self.HORIZONTAL_ACCELERATION
         else:
             self.acceleration.x = 0
 
+        # if keys[pygame.K_SPACE] and self.is_grounded:
+        #     self.velocity.y = -15
+        #     self.acceleration.y = 0.5
+        #     self.is_grounded = False
+
         # calculate new kinematic values
         self.acceleration.x -= self.velocity.x * self.HORIZONTAL_FRICTION
         self.velocity += self.acceleration
 
+
         # self.position += self.velocity #後退オイラー法
         self.position += self.velocity + 0.5 * self.acceleration #速度ベルレ法
-
+        print(self.acceleration.y, self.velocity.y, self.position.y)
         if self.position.x >= WINDOW_WIDTH-64:
             self.position.x = WINDOW_WIDTH-64
         elif self.position.x <= 0:
@@ -85,16 +94,17 @@ class Player(pygame.sprite.Sprite):
     def check_touch_ground(self):
         sprite = pygame.sprite.spritecollideany(self, grass_tile_group)
         if sprite:
-            self.position.y = sprite.rect.top - 62 
-            # ここがポイント　確実にcollidedの状態にしておく
-            # -64とすると２つのspriteはcollideしないことになるのでelseの処理になって不都合
-            # -62としてcollide状態を保っておく
+            # self.rect.bottom = sprite.rect.top
+
+            self.position.y = sprite.rect.top - 62
+            print("-------------------",self.position.y)
             self.velocity.y = 0
             self.acceleration.y = 0
             self.is_grounded = True
         else:
             self.acceleration.y = 0.5
             self.is_grounded = False
+        print("                    ", self.is_grounded)
 
 
     def reset_player(self):
@@ -163,11 +173,15 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
         if event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_SPACE and my_player.is_grounded:
+                print("==============jump")
                 my_player.velocity.y = -15
                 my_player.acceleration.y = 0.5
                 my_player.is_grounded = False
+
 
     # fill the background
     display_surface.blit(background_image, background_rect)
@@ -186,7 +200,6 @@ while running:
 
 
 pygame.quit()
-
 
 
 
