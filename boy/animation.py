@@ -126,10 +126,11 @@ class Player(pygame.sprite.Sprite):
 
 
     def animation(self):
-        self.image = self.animation_sprite[int(self.animation_number)]
         self.animation_number += 0.6
         if self.animation_number >= len(self.animation_sprite):
             self.animation_number = 0
+        self.image = self.animation_sprite[int(self.animation_number)]
+
         
 
 
@@ -147,7 +148,9 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_RIGHT]:
             self.acceleration.x = self.HORIZONTAL_ACCELERATION
             self.facing = 'right'
+
             self.animation_sprite =  self.animation_run_right
+
         elif keys[pygame.K_LEFT]:
             self.acceleration.x = - self.HORIZONTAL_ACCELERATION
             self.facing = 'left'
@@ -208,10 +211,11 @@ class Player(pygame.sprite.Sprite):
         if self.is_grounded:
             self.velocity.y = -1 * self.VERTICAL_JUMP_SPEED
             self.jump_sound.play()
-            # if self.facing == "right":
-            #     self.animation_sprite = self.animation_jump_right
-            # else:
-            #     self.animation_sprite = self.animation_jump_left
+            self.animation_number = 0
+            if self.facing == "right":
+                self.animation_sprite = self.animation_jump_right
+            else:
+                self.animation_sprite = self.animation_jump_left
             self.is_grounded = False
 
 
