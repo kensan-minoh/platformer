@@ -75,7 +75,7 @@ class Tile(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, dirt_tile_group, grass_tile_group, water_tile_group, group):
         super().__init__(group)
-        self.image = pygame.image.load('player.png')
+        
         self.splash_sound = pygame.mixer.Sound("splash_sound.mp3")
         self.jump_sound = pygame.mixer.Sound("jump_sound.mp3")
         self.jump_sound.set_volume(0.2)
@@ -83,19 +83,21 @@ class Player(pygame.sprite.Sprite):
         # for i in range(8):
         #     self.animation_run_right.append(pygame.image.load(f"boy/Run ({i+1}).png"))
         self.animation_idle_right = [pygame.transform.scale(pygame.image.load(f"boy/Idle ({i+1}).png").convert_alpha(),(64, 64)) for i in range(10)]
-        self.animation_idle_left = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(f"boy/Idle ({i+1}).png").convert_alpha(),(64, 64)),True, False) for i in range(10)]
+        self.animation_idle_left = [pygame.transform.flip(surf, True, False) for surf in self.animation_idle_right]
         self.animation_run_right = [pygame.transform.scale(pygame.image.load(f"boy/Run ({i+1}).png").convert_alpha(),(64, 64)) for i in range(8)]
-        self.animation_run_left = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(f"boy/Run ({i+1}).png").convert_alpha(),(64, 64)),True, False) for i in range(8)]
+        self.animation_run_left = [pygame.transform.flip(surf, True, False) for surf in self.animation_run_right]
         self.animation_jump_right = [pygame.transform.scale(pygame.image.load(f"boy/Jump ({i+1}).png").convert_alpha(),(64, 64)) for i in range(12)]
-        self.animation_jump_left = [pygame.transform.flip(pygame.transform.scale(pygame.image.load(f"boy/Jump ({i+1}).png").convert_alpha(),(64, 64)),True, False) for i in range(12)]
+        self.animation_jump_left = [pygame.transform.flip(surf, True, False) for surf in self.animation_jump_right]
 
 
         self.animation_sprite= self.animation_idle_right
-        self.animation_number = 0
+        self.current_sprite = 0
+
         self.facing = "right"
 
         self.starting_x = x
         self.starting_y = y
+        self.image = self.animation_sprite[self.current_sprite]
         self.rect = self.image.get_rect(topleft=(self.starting_x, self.starting_y))
         self.dirt_tile_group = dirt_tile_group
         self.grass_tile_group = grass_tile_group
@@ -126,16 +128,16 @@ class Player(pygame.sprite.Sprite):
 
 
     def animation(self):
-        self.animation_number += 0.6
-        if self.animation_number >= len(self.animation_sprite):
+        self.current_sprite += 0.4
+        if self.current_sprite >= len(self.animation_sprite):
             if self.is_grounded:
-                self.animation_number = 0
+                self.current_sprite = 0
             else:
-                self.animation_number = len(self.animation_sprite) - 1
-        # print(self.animation_number, int(self.animation_number))
-        self.image = self.animation_sprite[int(self.animation_number)]
+                self.current_sprite = len(self.animation_sprite) - 1
+        # print(self.current_sprite, int(self.current_sprite))
+        self.image = self.animation_sprite[int(self.current_sprite)]
 
-        pygame.time.wait(50)
+        pygame.time.wait(0)
 
 
     
@@ -222,7 +224,7 @@ class Player(pygame.sprite.Sprite):
         if self.is_grounded:
             self.velocity.y = -1 * self.VERTICAL_JUMP_SPEED
             self.jump_sound.play()
-            self.animation_number = 0
+            self.current_sprite = 0
             # if self.facing == "right":
             #     self.animation_sprite = self.animation_jump_right
             # else:
