@@ -69,8 +69,10 @@ class Tile(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect(topleft=(x,y))
 
-    def update(self):
-        pass
+    def update(self, display_surface):
+        
+
+        pygame.draw.rect(display_surface, 'blue', self.rect, width=2)
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, dirt_tile_group, grass_tile_group, water_tile_group, group):
@@ -139,6 +141,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         pygame.time.wait(0)
+        
 
 
     
@@ -207,7 +210,7 @@ class Player(pygame.sprite.Sprite):
             self.position.y = collided_platform.rect.top - 56
             # ここがポイント　確実にcollidedの状態にしておく
             # -64とすると２つのspriteはcollideしないことになるのでelseの処理になって不都合
-            # -62としてcollide状態を保っておく
+            # -56としてcollide状態を保っておく
             self.velocity.y = 0
             #self.acceleration.y = 0.5
             self.is_grounded = True
@@ -284,10 +287,14 @@ while running:
     # fill the background
     display_surface.blit(background_image, background_rect)
 
-    main_tile_group.update()
+ 
     main_tile_group.draw(display_surface)
+    main_tile_group.update(display_surface)
+
     player_group.update()
     player_group.draw(display_surface)
+
+    pygame.draw.rect(display_surface, 'red', my_player.rect, width=2)
 
     pygame.display.update()
 
