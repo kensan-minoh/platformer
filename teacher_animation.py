@@ -136,6 +136,7 @@ class Player(pygame.sprite.Sprite):
                 self.current_sprite = len(self.animation_sprite) - 1
         # print(self.current_sprite, int(self.current_sprite))
         self.image = self.animation_sprite[int(self.current_sprite)]
+        self.mask = pygame.mask.from_surface(self.image)
 
         pygame.time.wait(0)
 
@@ -190,19 +191,20 @@ class Player(pygame.sprite.Sprite):
         self.position += self.velocity + 0.5 * self.acceleration #速度ベルレ法
 
         # wrap around motion
-        if self.position.x >= WINDOW_WIDTH:
+        if self.position.x >= WINDOW_WIDTH-32:
             self.position.x = 0
-        elif self.position.x <= -64:
-            self.position.x = WINDOW_WIDTH
+        elif self.position.x <= 0:
+            self.position.x = WINDOW_WIDTH-32
+        print(self.rect.x, self.rect.y)
         
         # new rect based on kinematic calculations
         self.rect.topleft = (int(self.position.x), int(self.position.y))  
 
     def check_touch_grass(self):
         # check for collisions with the grass tile
-        collided_platform = pygame.sprite.spritecollideany(self, self.grass_tile_group)
+        collided_platform = pygame.sprite.spritecollideany(self, self.grass_tile_group,pygame.sprite.collide_mask)
         if collided_platform and self.velocity.y > 0:
-            self.position.y = collided_platform.rect.top - 62 
+            self.position.y = collided_platform.rect.top - 56
             # ここがポイント　確実にcollidedの状態にしておく
             # -64とすると２つのspriteはcollideしないことになるのでelseの処理になって不都合
             # -62としてcollide状態を保っておく
